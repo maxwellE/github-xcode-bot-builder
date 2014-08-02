@@ -54,7 +54,6 @@ class BotGithub
         elsif (github_state_new != :unknown && github_state_cur != github_state_new)
           if update_github
             # Build has passed or failed so update status and comment on the issue
-            create_comment_for_bot_status(pr, bots)
             create_status(pr, github_state_new, bots) #convert_bot_status_to_github_description(bot), bot.status_url)
           end
         else
@@ -68,7 +67,7 @@ class BotGithub
     bots_unprocessed.each do |bot_short_name|
       bot = bot_statuses[bot_short_name]
       # TODO: BotBuilder.instance.remove_outdated_bots(self.repo)
-      self.bot_builder.delete_bot(bot.guid) unless !is_managed_bot(bot)
+      # self.bot_builder.delete_bot(bot.guid) unless !is_managed_bot(bot)
     end
   end
 
@@ -103,6 +102,8 @@ class BotGithub
       when :error
         return bot.status_url
       when :failure
+        return bot.status_url
+      else
         return bot.status_url
       end
     end
@@ -194,8 +195,9 @@ class BotGithub
     description = convert_all_bot_status_to_github_description(bots)
     target_url = convert_all_bot_status_to_url(bots)
     options = {}
-    if (!description.nil?)
-      options['description'] = description
+    options['description'] = description
+    if (options['description'].nil?)
+      options['description'] = 'XCode Bot Page'
     end
     if (!target_url.nil?)
       options['target_url'] = target_url

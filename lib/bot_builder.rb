@@ -188,7 +188,7 @@ class BotBuilder
     statuses = {}
     results.each do |result|
       bot = OpenStruct.new result['entity']
-      bot.status_url = "http://#{@server}/xcode/bots/#{bot.tinyID}"
+      bot.status_url = "http://gumbot.ngrok.com/xcode/bots/#{bot.tinyID}"
       bot.latest_run_status = (bot.latestRunStatus.nil? || bot.latestRunStatus.empty?) ? :unknown : bot.latestRunStatus.to_sym
       bot.latest_run_sub_status = (bot.latestRunSubStatus.nil? || bot.latestRunSubStatus.empty?) ? :unknown : bot.latestRunSubStatus.to_sym
       if (bot.latest_run_status == :completed and integration_queued(bot.guid))
@@ -294,8 +294,6 @@ class BotBuilder
     request.body = payload.to_json
     response = http.request(request)
     json = JSON.parse(response.body)
-    # response_status = json['responses'][0]['responseStatus']
-    # puts "Result status #{response_status}"
     json
   end
 
@@ -310,5 +308,4 @@ class BotBuilder
       expandReferencedObjects: false
     }
   end
-
 end
