@@ -90,6 +90,8 @@ class BotGithub
         bot.scheme + " Error"
       when :failure
         bot.scheme + " Failed (" + bot.latest_run_sub_status.to_s + ")"
+      else
+        ""
       end
     end.compact
 
@@ -199,6 +201,10 @@ class BotGithub
     if (options['description'].nil?)
       options['description'] = 'XCode Bot Page'
     end
+    if github_state == :pending
+      options['description'] = nil
+    end
+    options['target_url'] = "http://gumbot.ngrok.com/xcode/bots"
     if (!target_url.nil?)
       options['target_url'] = target_url
     end
