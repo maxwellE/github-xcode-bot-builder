@@ -2,6 +2,8 @@ require 'octokit'
 require 'singleton'
 require 'bot_builder'
 require 'ostruct'
+require 'dotenv'
+Dotenv.load
 
 class BotGithub
   attr_accessor :client, :bot_builder, :github_repo, :scheme
@@ -210,6 +212,24 @@ class BotGithub
     end
     self.client.create_status(self.github_repo, pr.sha, github_state.to_s, options)
     puts "PR #{pr.number} status updated to \"#{github_state}\" with description \"#{description}\""
+    if ENV["HIPCHAT_API_TOKEN"]
+      all_commits =  self.client.pull_request_commits(self.github_repo, pr.number)
+      commiter_info = all_commits.first["author"]
+      base_message = " #{commiter_info['login']}'s build in <a href='https://github.com/#{self.github_repo}'>#{self.github_repo}</a> (<a href='https://github.com/#{self.github_repo}/tree/#{pr.branch}'>#{pr.branch}</a>)\n"
+      commits_message = all_commits.map{|commit_data| "- " << commit_data["commit"]["message"]}.join("\n")
+      base_message << commits_message
+      client = HipChat::Client.new(ENV["HIPCHAT_API_TOKEN"], api_version: "v2")
+      room_name = ENV["HIPCHAT_ROOM_NAME"]
+      sending_username = ENV["HIPCHAT_MESSAGE_SENDER_USERNAME"]
+      case github_state
+      when :success
+        client[room_name].send(sending_username, "Success:" + base_message, color: "green")
+      when :error
+        client[room_name].send(sending_username, "Error:" + base_message, color: "red")
+      when :failure
+        client[room_name].send(sending_username, "Failure:" + base_message, color: "red")
+      end
+    end
   end
 
   def latest_github_state(pr)

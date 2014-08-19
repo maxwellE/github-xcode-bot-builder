@@ -50,3 +50,6 @@ pkg
 
 # For rubymine
 .idea
+
+# For dotenv
+.env

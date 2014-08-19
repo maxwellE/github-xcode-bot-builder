@@ -2,6 +2,8 @@ source "http://rubygems.org"
 
 gem "octokit", "~> 2.0"
 gem "parseconfig", "~> 1.0.2"
+gem "hipchat"
+gem 'dotenv'
 
 group :development do
   gem "rspec", "~> 2.8.0"
