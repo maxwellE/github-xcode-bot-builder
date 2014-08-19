@@ -3,6 +3,7 @@ require 'singleton'
 require 'bot_builder'
 require 'ostruct'
 require 'dotenv'
+require 'hipchat'
 Dotenv.load
 
 class BotGithub
@@ -215,8 +216,8 @@ class BotGithub
     if ENV["HIPCHAT_API_TOKEN"]
       all_commits =  self.client.pull_request_commits(self.github_repo, pr.number)
       commiter_info = all_commits.first["author"]
-      base_message = " #{commiter_info['login']}'s build in <a href='https://github.com/#{self.github_repo}'>#{self.github_repo}</a> (<a href='https://github.com/#{self.github_repo}/tree/#{pr.branch}'>#{pr.branch}</a>)\n"
-      commits_message = all_commits.map{|commit_data| "- " << commit_data["commit"]["message"]}.join("\n")
+      base_message = " #{commiter_info['login']}'s build in <a href='https://github.com/#{self.github_repo}'>#{self.github_repo}</a> (<a href='https://github.com/#{self.github_repo}/pull/#{pr.number}'>#{pr.branch}</a>)<br>"
+      commits_message = all_commits.map{|commit_data| "- " << commit_data["commit"]["message"]}.join("<br>")
       base_message << commits_message
       client = HipChat::Client.new(ENV["HIPCHAT_API_TOKEN"], api_version: "v2")
       room_name = ENV["HIPCHAT_ROOM_NAME"]
