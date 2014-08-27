@@ -2,8 +2,8 @@ require 'octokit'
 require 'singleton'
 require 'bot_builder'
 require 'ostruct'
-require 'dotenv'
 require 'hipchat'
+require 'dotenv'
 Dotenv.load
 
 class BotGithub
@@ -70,7 +70,7 @@ class BotGithub
     bots_unprocessed.each do |bot_short_name|
       bot = bot_statuses[bot_short_name]
       # TODO: BotBuilder.instance.remove_outdated_bots(self.repo)
-      # self.bot_builder.delete_bot(bot.guid) unless !is_managed_bot(bot)
+      self.bot_builder.delete_bot(bot.guid) unless !is_managed_bot(bot)
     end
   end
 
@@ -213,15 +213,14 @@ class BotGithub
     end
     self.client.create_status(self.github_repo, pr.sha, github_state.to_s, options)
     puts "PR #{pr.number} status updated to \"#{github_state}\" with description \"#{description}\""
-    if ENV["HIPCHAT_API_TOKEN"]
       all_commits =  self.client.pull_request_commits(self.github_repo, pr.number)
       commiter_info = all_commits.first["author"]
       base_message = " #{commiter_info['login']}'s build in <a href='https://github.com/#{self.github_repo}'>#{self.github_repo}</a> (<a href='https://github.com/#{self.github_repo}/pull/#{pr.number}'>#{pr.branch}</a>)<br>"
       commits_message = all_commits.map{|commit_data| "- " << commit_data["commit"]["message"]}.join("<br>")
       base_message << commits_message
-      client = HipChat::Client.new(ENV["HIPCHAT_API_TOKEN"], api_version: "v2")
-      room_name = ENV["HIPCHAT_ROOM_NAME"]
-      sending_username = ENV["HIPCHAT_MESSAGE_SENDER_USERNAME"]
+      client = HipChat::Client.new(ENV["HIPCHAT_API_TOKEN"])
+      room_name = ENV["HIPCHAT_ROOM"]
+      sending_username = ENV["HIPCHAT_MESSAGE_USERNAME"]
       case github_state
       when :success
         client[room_name].send(sending_username, "Success:" + base_message, color: "green")
@@ -230,7 +229,6 @@ class BotGithub
       when :failure
         client[room_name].send(sending_username, "Failure:" + base_message, color: "red")
       end
-    end
   end
 
   def latest_github_state(pr)
